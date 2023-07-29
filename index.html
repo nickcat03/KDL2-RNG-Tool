@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+    <style>
+
+        @import url("styles.css");
+
+    </style>
+    <head>
+        <title>Kirby's Dream Land 2 RNG</title>
+    </head>
+
+    <body class="ubuntu-font">
+    <script src="rng.js"></script>
+    <script src="frontend.js"></script>
+    <script src="calculations.js"></script>
+    <noscript>JavaScript is required to use this tool / このツールを使用するにはJavaScriptが必要です</noscript>
+
+
+    <h1>KDL2 RNG Tool</h1>
+
+    <div class="links">
+        <span>Main Page</span><br>
+        <a href="tools.html">Tools</a><br>
+        <a href="rta_manual.html">Manual</a>
+    </div>
+
+    <label>Min: </label>
+    <input style="width: 40px" maxlength="5" type="text" id="min">
+    <label>Max: </label>
+    <input style="width: 40px" maxlength="5" type="text" id="max">
+    <button id="findButton" onClick="fillMinAndMaxDefaults()">Fill Defaults</button>
+    <br>
+    <br>
+
+
+    <div id="star-selection">
+        <label>Stars: </label>
+        <select id = "input-amount" onChange="changeInputs(value)">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected="selected">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+        </select>
+    </div>
+
+    <table class="input-display-div" id="input-display">
+        <td id="box1">1</td>
+        <td id="box2" style="display:none">2</td>
+        <td id="box3" style="display:none">3</td>
+        <td id="box4" style="display:none">4</td>
+        <td id="box5" style="display:none">5</td>
+        <td id="box6" style="display:none">6</td>
+    </table>
+    <span style="font-size:18px">numpad: input - enter: reset - backspace: go back</span>
+    <br>
+
+    <div id="directions">Press on Numpad to start</div>
+
+    <div id="multiple-warning">-</div>
+
+    <div id="full-info-container">
+        <div class="info-container" id="info-container1"><img class="enemy-image" id="enemy1-image" src="images/coo-bag3x.png"><span class="enemy-output-text" id="enemy-output1">-</span><span class="enemy-output-text-advanced" id="enemy-output1-advanced"></span></div>
+    </div>
+
+    <div id="all-possible-counts">-</div>
+    <br>
+
+    <details class="settings-box">
+        <summary>Settings:</summary>
+        <ul>
+            <li><label>No Numpad:</label><input type="checkbox" id="numpad-toggle" onChange="initializePage()"></li>
+            <li><label>Technical Information:</label><input type="checkbox" id="advanced-toggle" onChange="advancedInfo(this)"></li>
+        </ul>
+    </details>
+
+    <div style="height: 500px;"></div>
+
+
+    <script>
+
+    const keys = [0, 0, 0];
+    const convertedKeys = Array(6).fill(0);
+    let keyCount = 0;
+    let integer = null;
+
+    var subgame = 0;
+    var boss = 0;
+
+    var value;
+
+    const box = [document.getElementById("box1"), document.getElementById("box2"), document.getElementById("box3"), document.getElementById("box4"), document.getElementById("box5"), document.getElementById("box6")];
+    var maxInputs = 4;
+
+    const inputAmount = document.querySelector('#input-amount');
+    const starSelection = document.getElementById('star-selection');
+
+    const minBox = document.getElementById("min");
+    const maxBox = document.getElementById("max");
+
+    /*All stuff for subgame toggle*/
+    const enemy1Image = document.getElementById("enemy1-image");
+
+    /*Difficulty selector*/
+    const difficultySelector = document.getElementById("difficulty-selector");
+    const infoContainer = document.getElementById("full-info-container");
+
+    const enemyLabel1 = document.getElementById("enemy-label1");
+
+    const infoContainer1 = document.getElementById("info-container1");
+
+    /*Stuff for RNG display*/
+    const directions = document.getElementById("directions");   
+    const multipleWarning = document.getElementById("multiple-warning");
+    const enemyOutput1 = document.getElementById("enemy-output1");
+    const enemyOutput1Advanced = document.getElementById("enemy-output1-advanced");
+    const allPossibleCounts = document.getElementById("all-possible-counts");
+
+    /*Settings*/
+    const subgameSelected = document.querySelector("#subgame");
+    const bossSelected = document.querySelector("#boss")
+    const noNumpad = document.querySelector("#numpad-toggle");
+
+
+    //On page load
+    window.onload = function() {
+        changeInputs(inputAmount.value);
+        bossToggle(bossSelected.value);
+        advancedInfo(document.querySelector('#advanced-toggle'));
+
+        /*find language preference*/
+    }
+
+    window.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.target.tagName?.toUpperCase() === 'INPUT') { //Do not send inputs if user is in a text box
+                return;
+            }
+            let key = `${event.key}`;
+
+            if (noNumpad.checked) {
+                integer = noNumpadConversion(key);
+            }
+            else {
+                integer = parseInt(key, 10);
+            }
+
+            if (keyRequirements(boss, integer, keyCount - maxInputs)) {
+                if (keyCount >= maxInputs) {
+                    initializeInputs();
+                }
+
+                keys[keyCount] = integer;
+                keyCount++;
+
+                //number box green lightup and input viewer
+                var tableCell =  document.getElementById("box" + (keyCount));
+                tableCell.style.backgroundColor = "#98fb98";
+
+                if (boss == 0) {
+                    tableCell.innerHTML = NumpadToArrow(integer);
+                }
+                else if (boss == 1) {
+                    if (keyCount < 2) {
+                        tableCell.innerHTML = NumpadToArrow(integer);
+                    }
+                    else {
+                        tableCell.innerHTML = "<img style='margin-top:3px;padding:0px;vertical-align:center;' src=images/smirror-" + NumpadToSmirror(integer, keyCount - maxInputs) + ".png>";
+                    }
+                }
+
+                if (keyCount >= maxInputs) {
+                    sendKeys();
+                }
+            }
+            else if (key === "Enter") {
+                initializePage();  
+            }
+            else if (key === "Backspace") {
+                if (keyCount > 0) {
+                    keyCount --;
+                    var tableCell =  document.getElementById("box" + (keyCount + 1));
+                    tableCell.style.backgroundColor = "white";
+                    tableCell.innerHTML = keyCount + 1;
+                }
+            }
+        },
+        true
+    );
+
+    async function sendKeys() {
+        initializeText();
+        
+        allPossibleCounts.innerHTML = "<img class='loading' src='images/kirby-running.gif'> All possible counts:";
+
+        rngSearch();
+        if (boss == 0) {
+            allPossibleCounts.innerHTML = printAllValues();
+        }   
+    }
+
+    async function rngSearch() {
+        //Grab numbers from text boxes
+        var min = minBox.value;
+        var max = maxBox.value;
+
+        if ((min.length == 0) || (max.length == 0)) {
+            initializeText();
+            directions.innerHTML = "Please input values into the min and max boxes.";
+            return;
+        }
+
+        min = parseInt(min, 10); 
+        max = parseInt(max, 10); 
+        
+        if ((min !== min) || (max !== max)) {
+            initializeText();
+            directions.innerHTML = "Please only input integers.";
+            return;
+        }
+
+        if (min < 0)
+            min = 0;
+        
+        if (max > 65536)
+            max = 65536;
+        
+        var hexMin = advanceRNG("0000", min);
+        
+        for (var i = 0; i < maxInputs; i++) {
+            if (boss == 0) {
+                convertedKeys[i] = NumpadToStarDirection(keys[i]);
+                min += 0; //these adjustments are made because the six number function is just for the range of numbers checked, not range of results
+                max += 0; 
+            }
+            else if (boss == 1) {
+                convertedKeys[i] = keys[i];
+                min -= 1;
+            }
+        }
+        for (i = 5; i > (maxInputs - 1); i--) {
+            convertedKeys[i] = ""
+        }
+
+
+        value = compareSixNumbers(convertedKeys[0], convertedKeys[1], convertedKeys[2], convertedKeys[3], convertedKeys[4], convertedKeys[5], hexMin, min, max, hexToStarDirection, 1);
+        var currentHexValue = value[0][0]; //second [0] means that this is the "quickest" hex value
+
+        if (hits == 0) {
+            initializeText();
+            directions.innerText = "Results:";
+            multipleWarning.innerText = "Not in Range."
+            allPossibleCounts.innerHTML = "<img class='loading' src='images/kirby-running.gif'> All possible counts:";
+        }
+        else if (hits > 1) {
+            directions.innerText = "Results:";
+            multipleWarning.innerHTML = "<span style='color:red;'>Warning: </span>" + hits + " possible RNG points in this range!";
+            await displayResults(currentHexValue);
+        }
+        else {
+            directions.innerText = "Results:";
+            multipleWarning.innerHTML = "Predicted RNG count: " + (value[1][0]);
+            await displayResults(currentHexValue);
+        }
+    }
+
+    function printAllValues() {
+        //Print all possible values outside of the range the user gave
+        var output = "<details><summary>All possible counts:</summary><ul>"
+        var countAll = "";
+
+        var allValue = compareSixNumbers(convertedKeys[0], convertedKeys[1], convertedKeys[2], convertedKeys[3], convertedKeys[4], convertedKeys[5], "0000", 0, 65536, hexToStarDirection, 1);
+
+        for (i = 0; i < hits; i++) {
+                if (value[1].includes(allValue[1][i]))
+                    countAll += "<li style='color:red;'>" + allValue[1][i] + "</li>";
+                else
+                    countAll += "<li>" + allValue[1][i] + "</li>";
+            }
+        output += countAll + "</ul></details>";
+        return output;
+    }
+
+
+    function initializeText() {
+        directions.innerHTML = "Press on Numpad to start";   
+        multipleWarning.innerHTML = "-";
+        enemyOutput1.innerHTML = "-";
+        enemyOutput1Advanced.innerHTML = "";
+        allPossibleCounts.innerHTML = "-";
+    }
+
+    function initializeInputs() {
+        keyCount = 0;
+        for (var i = 0; i < maxInputs; i++) {
+            var tableCell =  document.getElementById("box" + (i + 1));
+            tableCell.style.backgroundColor = "white";
+            tableCell.innerHTML = i + 1;
+        }
+    }
+
+    function initializePage() {
+        initializeText();
+        initializeInputs();
+    }
+
+    function advancedInfo(cb) {
+        if (cb.checked) {
+            enemyOutput1Advanced.style.display = "revert";
+        }
+        else {
+            enemyOutput1Advanced.style.display = "none";
+        }
+    }
+
+    function fillMinAndMaxDefaults() {
+        if (subgame == 0) {
+            minBox.value = 750;
+            maxBox.value = 950;
+        }
+        else {
+            minBox.value = 3100;
+            maxBox.value = 3400;
+        }
+    }
+
+    function keyRequirements(boss, integer, inputs) {
+        if (boss == 0)
+            return (integer === integer && integer !== null && integer != 0 && integer != 5);
+        else if (boss == 1) {
+            if ((keyCount < 1 || keyCount == maxInputs)) {
+                return (integer === integer && integer !== null && integer != 0 && integer !=5);
+            }
+            else if (inputs == -1) {
+                return (integer === integer && integer !== null && integer != 0 && integer < 3);
+            }
+            return (integer === integer && integer !== null && integer != 0 && integer < 4);
+        }
+    }
+
+    function displayResults(currentHexValue) {
+        console.log(currentHexValue);
+        var result = findCooBag(currentHexValue);
+
+        if (result < 3) {
+            enemyOutput1.innerHTML = result + " Jumps (Kill Corpse)";
+        }
+        else {
+            enemyOutput1.innerHTML = (result + 1) + " Jumps (Leave Corpse)";
+        }
+
+        enemyOutput1Advanced.innerHTML = ("Advances: " + enemyOutput1Text[1] + "&emsp;Ending Value: " + advanceRngAndSlice(enemyOutput1Text[4], 0));
+    }
+
+    </script>
