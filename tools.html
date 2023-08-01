@@ -134,7 +134,7 @@
             let hex1 = document.getElementById("hex1").value;
             let hex2 = document.getElementById("hex2").value;
             hex = hex1 + hex2;
-            nextHex = nextHexRNG(hex);
+            nextHex = advanceRNG(hex, 1);
             nextHex1 = nextHex.slice(0, 2);
             nextHex2 = nextHex.slice(2);
 
@@ -168,7 +168,7 @@
             hex1 = toHexString(dec1);
             hex2 = toHexString(dec2);
             hex = hex1 + hex2;
-            nextHex = nextHexRNG(hex);
+            nextHex = advanceRNG(hex, 1);
             nextHex1 = nextHex.slice(0, 2);
             nextHex2 = nextHex.slice(2);
 
