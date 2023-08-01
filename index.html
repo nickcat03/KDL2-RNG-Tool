@@ -194,12 +194,10 @@
     function sendKeys() {
         initializeText();
         
-        allPossibleCounts.innerHTML = "<img class='loading' src='images/kirby-running.gif'> All possible counts:";
+        //allPossibleCounts.innerHTML = "<img class='loading' src='images/kirby-running.gif'> All possible counts:";
 
         rngSearch();
-        if (boss == 0) {
-            allPossibleCounts.innerHTML = printAllValues();
-        }   
+        allPossibleCounts.innerHTML = printAllValues();
     }
 
     function rngSearch() {
