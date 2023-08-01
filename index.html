@@ -191,7 +191,7 @@
         true
     );
 
-    async function sendKeys() {
+    function sendKeys() {
         initializeText();
         
         allPossibleCounts.innerHTML = "<img class='loading' src='images/kirby-running.gif'> All possible counts:";
@@ -202,7 +202,7 @@
         }   
     }
 
-    async function rngSearch() {
+    function rngSearch() {
         //Grab numbers from text boxes
         var min = minBox.value;
         var max = maxBox.value;
@@ -258,12 +258,12 @@
         else if (hits > 1) {
             directions.innerText = "Results:";
             multipleWarning.innerHTML = "<span style='color:red;'>Warning: </span>" + hits + " possible RNG points in this range!";
-            await displayResults(currentHexValue);
+            displayResults(currentHexValue);
         }
         else {
             directions.innerText = "Results:";
             multipleWarning.innerHTML = "Predicted RNG count: " + (value[1][0]);
-            await displayResults(currentHexValue);
+            displayResults(currentHexValue);
         }
     }
 
