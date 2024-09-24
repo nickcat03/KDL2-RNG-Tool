@@ -181,7 +181,7 @@ function compareSixNumbers(num1, num2, num3, num4, num5, num6, hex, startCount, 
 
 
 function findCooBag(hex) {
-    hex = advanceRNG(hex, 2); //advance 1 cuz we need to be ahead one for the check, advance another for corpse kill
+    hex = advanceRNG(hex, 1); //advance 1 cuz we need to be ahead one for the check
     var jumps = -1;
     var animalFriend = -1;
     while (animalFriend != 1) {
