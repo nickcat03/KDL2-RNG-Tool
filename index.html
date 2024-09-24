@@ -337,12 +337,7 @@
         console.log(currentHexValue);
         var result = findCooBag(currentHexValue);
 
-        if (result < 3) {
-            enemyOutput1.innerHTML = result + " Jumps (Kill Corpse)";
-        }
-        else {
-            enemyOutput1.innerHTML = (result + 1) + " Jumps (Leave Corpse)";
-        }
+        enemyOutput1.innerHTML = result + " Jumps";
 
         enemyOutput1Advanced.innerHTML = ("Advances: " + enemyOutput1Text[1] + "&emsp;Ending Value: " + advanceRngAndSlice(enemyOutput1Text[4], 0));
     }
